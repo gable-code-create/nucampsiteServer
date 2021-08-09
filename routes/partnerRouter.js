@@ -1,7 +1,7 @@
 const express = require('express');
 const partnerRouter = express.Router();
 const Partner = require('../models/partner');
-
+const authenticate = require('../authenticate');
 
 partnerRouter.route('/')
 .get((req, res, next) => {
@@ -13,7 +13,7 @@ partnerRouter.route('/')
     })
     .catch(err => next(err));
 })
-.post((req, res, next) => {
+.post(authenticate.verifyUser,authenticate.verifyAdmin,  (req, res, next) => {
     Partner.create(req.body)
     .then(partner => {
         console.log('Partner Created ', partner);
@@ -23,11 +23,11 @@ partnerRouter.route('/')
     })
     .catch(err => next(err));
 })
-.put((req, res) => {
+.put(authenticate.verifyUser, (req, res) => {
     res.statusCode = 403;
     res.end('PUT operation not supported on /partners');
 })
-.delete((req, res, next) => {
+.delete(authenticate.verifyUser,authenticate.verifyAdmin,  (req, res, next) => {
     Partner.deleteMany()
     .then(response => {
         res.statusCode = 200;
@@ -46,7 +46,7 @@ partnerRouter.route('/:partnersId')
         })
         .catch(err => next(err));
     })
-    .post((req, res) => {
+    .post(authenticate.verifyUser, (req, res) => {
        Partner.findById(req.params.campsiteId)
     .then(partner => {
         if (partner) {
@@ -66,7 +66,7 @@ partnerRouter.route('/:partnersId')
     })
     .catch(err => next(err));
     })
-    .put((req, res, next) => {
+    .put(authenticate.verifyUser,authenticate.verifyAdmin,  (req, res, next) => {
         Partner.findByIdAndUpdate(req.params.partnerId, {
             $set: req.body
         }, { new: true })
@@ -77,7 +77,7 @@ partnerRouter.route('/:partnersId')
         })
         .catch(err => next(err));
     })
-    .delete((req, res, next) => {
+    .delete(authenticate.verifyUser,authenticate.verifyAdmin,  (req, res, next) => {
     Partner.findById(req.params.campsiteId)
     .then(partner => {
         if (partner) {
