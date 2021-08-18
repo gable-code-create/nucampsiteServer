@@ -2,9 +2,11 @@ const express = require('express');
 const partnerRouter = express.Router();
 const Partner = require('../models/partner');
 const authenticate = require('../authenticate');
+const cors = require('./cors');
 
 partnerRouter.route('/')
-.get((req, res, next) => {
+.options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, (req, res, next) => {
     Partner.find()
     .then(partner => {
         res.statusCode = 200;
@@ -13,7 +15,7 @@ partnerRouter.route('/')
     })
     .catch(err => next(err));
 })
-.post(authenticate.verifyUser,authenticate.verifyAdmin,  (req, res, next) => {
+.post(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,  (req, res, next) => {
     Partner.create(req.body)
     .then(partner => {
         console.log('Partner Created ', partner);
@@ -23,11 +25,11 @@ partnerRouter.route('/')
     })
     .catch(err => next(err));
 })
-.put(authenticate.verifyUser, (req, res) => {
+.put(cors.corsWithOptions,authenticate.verifyUser, (req, res) => {
     res.statusCode = 403;
     res.end('PUT operation not supported on /partners');
 })
-.delete(authenticate.verifyUser,authenticate.verifyAdmin,  (req, res, next) => {
+.delete(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,  (req, res, next) => {
     Partner.deleteMany()
     .then(response => {
         res.statusCode = 200;
@@ -37,7 +39,8 @@ partnerRouter.route('/')
     .catch(err => next(err));
 });
 partnerRouter.route('/:partnersId')
-    .get((req, res, next) => {
+    .options(cors.corsWithOptions, (req, res) => res.sendStatus(200))
+.get(cors.cors, (req, res, next) => {
         Partner.findById(req.params.partnersId)
         .then(partners => {
             res.statusCode = 200;
@@ -46,27 +49,12 @@ partnerRouter.route('/:partnersId')
         })
         .catch(err => next(err));
     })
-    .post(authenticate.verifyUser, (req, res) => {
-       Partner.findById(req.params.campsiteId)
-    .then(partner => {
-        if (partner) {
-            partner.comments.push(req.body);
-            partner.save()
-            .then(partner => {
-                res.statusCode = 200;
-                res.setHeader('Content-Type', 'application/json');
-                res.json(partner);
-            })
-            .catch(err => next(err));
-        } else {
-            err = new Error(`Partner ${req.params.partnerId} not found`);
-            err.status = 404;
-            return next(err);
-        }
+    .post(cors.corsWithOptions,authenticate.verifyUser, (req, res) => {
+       
+        res.statusCode = 403;
+        res.end(`POST operation not supported on /promotions/${req.params.promotionsId}`);
     })
-    .catch(err => next(err));
-    })
-    .put(authenticate.verifyUser,authenticate.verifyAdmin,  (req, res, next) => {
+    .put(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,  (req, res, next) => {
         Partner.findByIdAndUpdate(req.params.partnerId, {
             $set: req.body
         }, { new: true })
@@ -77,7 +65,7 @@ partnerRouter.route('/:partnersId')
         })
         .catch(err => next(err));
     })
-    .delete(authenticate.verifyUser,authenticate.verifyAdmin,  (req, res, next) => {
+    .delete(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,  (req, res, next) => {
     Partner.findById(req.params.campsiteId)
     .then(partner => {
         if (partner) {
