@@ -78,12 +78,16 @@ favoriteRouter.route('/:campsiteId')
     res.end(`POST operation not supported on /promotions/${req.params.promotionsId}`);
     })
     .post(cors.corsWithOptions,authenticate.verifyUser, (req, res) => {
-        
-       Favorite.findOne(req.params.campsiteId).then(favorite => {
-           //add to favorites campsite array
-
-           // If the campsite is already in the array, then respond with a message saying "That campsite is already in the list of favorites!"
-       })
+        if(Favorite.findOne(req.user._id)){
+            if(Favorite.findOne(req.params.campsiteId)){
+         
+                res.end("That campsite is already in the list of favorites!");
+            }else{
+            Favorite.push(favorite);
+            Favorite.save();
+           }
+        }
+       
     })
     .put(cors.corsWithOptions,authenticate.verifyUser,authenticate.verifyAdmin,  (req, res, next) => {
         res.statusCode = 403;
